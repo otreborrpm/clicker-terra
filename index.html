@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090d2a">
+<title>Clicker Circle — Cosmos Tycoon</title>
+<style>
+  :root {
+    --gold: #ffd66b;
+    --gold2: #ffad35;
+    --cyan: #67e8ff;
+    --panel: rgba(13, 19, 54, .88);
+    --panel2: rgba(25, 34, 83, .82);
+    --line: rgba(149, 190, 255, .22);
+    --text: #f4f7ff;
+    --muted: #b7c4ed;
+    --green: #66f2a4;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; min-height:100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:var(--text); }
+  body {
+    background:
+      linear-gradient(rgba(3,5,20,.54), rgba(5,7,27,.72)),
+      url("https://svs.gsfc.nasa.gov/vis/a000000/a014800/a014866/M81andM82_Wallpaper_desktop.png") center center / cover fixed no-repeat,
+      linear-gradient(145deg, #05071b 0%, #10143a 50%, #080b25 100%);
+    overflow-x:hidden;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:-1; opacity:.7;
+    background-image:
+      radial-gradient(2px 2px at 8% 20%, #fff, transparent 60%),
+      radial-gradient(1px 1px at 25% 75%, #bceaff, transparent 60%),
+      radial-gradient(2px 2px at 44% 13%, #fff, transparent 60%),
+      radial-gradient(1px 1px at 63% 39%, #fff, transparent 60%),
+      radial-gradient(2px 2px at 82% 12%, #ffe6a0, transparent 60%),
+      radial-gradient(1px 1px at 91% 65%, #fff, transparent 60%),
+      radial-gradient(1px 1px at 13% 88%, #c9d6ff, transparent 60%),
+      radial-gradient(2px 2px at 71% 84%, #fff, transparent 60%);
+    background-size: 320px 260px;
+  }
+  .app { max-width: 1440px; margin:0 auto; padding:16px; }
+  header {
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    padding:15px 18px; border:1px solid var(--line); border-radius:20px;
+    background:linear-gradient(115deg, rgba(19,27,75,.9), rgba(18,18,54,.82));
+    box-shadow:0 12px 36px #0005; backdrop-filter: blur(10px);
+  }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .logo {
+    width:48px; height:48px; border-radius:50%; display:grid; place-items:center;
+    background:radial-gradient(circle at 35% 25%, #fff3b5, #ffc13e 35%, #b45b19 75%, #52206e);
+    border:2px solid #ffe7a2; color:#3e185b; font-size:25px; font-weight:1000;
+    box-shadow:0 0 24px #ffcb4e77, inset 0 0 8px #fff8;
+  }
+  h1 { margin:0; font-size:clamp(1.2rem,3vw,1.85rem); letter-spacing:.4px; }
+  .subtitle { color:var(--muted); font-size:.82rem; margin-top:2px; }
+  .top-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  button { font:inherit; cursor:pointer; }
+  .small-btn {
+    color:var(--text); background:#202b65; border:1px solid #6579c8; padding:9px 12px;
+    border-radius:12px; font-weight:750; transition:transform .12s, filter .12s;
+  }
+  .small-btn:hover { filter:brightness(1.2); transform:translateY(-1px); }
+  .stats {
+    display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:14px 0;
+  }
+  .stat {
+    min-width:0; border:1px solid var(--line); border-radius:16px; padding:12px 14px;
+    background:linear-gradient(140deg, rgba(24,34,83,.92), rgba(12,16,47,.88));
+  }
+  .stat-label { color:var(--muted); font-size:.78rem; }
+  .stat-value { font-weight:900; font-size:clamp(1rem,2.7vw,1.45rem); color:#fff2bd; overflow-wrap:anywhere; }
+  .layout { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr); gap:14px; align-items:stretch; }
+  .panel {
+    border:1px solid var(--line); border-radius:20px; background:var(--panel);
+    box-shadow:0 16px 40px #0004; min-width:0; overflow:hidden;
+  }
+  .panel-heading { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:15px 17px; border-bottom:1px solid var(--line); }
+  .panel-heading h2 { margin:0; font-size:1.05rem; }
+  .hint { font-size:.78rem; color:var(--muted); }
+  .play-area {
+    min-height:510px; position:relative; padding:24px 16px 20px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; overflow:hidden;
+    background:
+      radial-gradient(ellipse at 50% 46%, rgba(50,72,162,.28), transparent 50%),
+      radial-gradient(ellipse at 50% 110%, rgba(137,57,186,.2), transparent 40%);
+  }
+  .planet { position:absolute; border-radius:50%; pointer-events:none; overflow:hidden; opacity:.98; isolation:isolate; }
+  .planet::before { content:""; position:absolute; inset:0; border-radius:50%; z-index:1; background:radial-gradient(ellipse at 27% 19%,#ffffffb0 0%,#ffffff35 9%,transparent 25%),radial-gradient(ellipse at 62% 72%,#0005,transparent 44%),linear-gradient(112deg,transparent 34%,#05091eaa 100%); box-shadow:inset -8px -6px 13px #05091e99,inset 3px 2px 6px #ffffff55; }
+  .planet::after { content:""; position:absolute; inset:0; border-radius:50%; opacity:.5; background:repeating-radial-gradient(ellipse at 38% 35%,transparent 0 4px,#ffffff13 5px 6px,transparent 7px 10px); mix-blend-mode:screen; }
+  .planet.one { width:72px;height:72px;top:9%;left:8%;background:radial-gradient(ellipse at 26% 28%,#e7d3b5 0 5%,transparent 17%),radial-gradient(ellipse at 65% 62%,#9b6b68 0 9%,transparent 21%),radial-gradient(ellipse at 42% 68%,#d0b59b 0 11%,transparent 23%),repeating-linear-gradient(168deg,#d9c5a5 0 3px,#b99586 4px 6px,#8c6976 7px 9px,#c9ae96 10px 13px); box-shadow:0 0 20px #c08ed955; }
+  .planet.two { width:44px;height:44px;top:18%;right:10%;background:radial-gradient(ellipse at 30% 24%,#eaffff 0 6%,transparent 19%),radial-gradient(ellipse at 68% 62%,#347a9f 0 12%,transparent 30%),repeating-linear-gradient(158deg,#aee4e8 0 3px,#5baec8 4px 6px,#367b9e 7px 9px,#8cd3de 10px 13px);box-shadow:0 0 18px #5adfff55; }
+  .planet.three { width:25px;height:25px;bottom:16%;left:13%;background:radial-gradient(circle at 30% 25%,#fff2b5 0 6%,transparent 18%),radial-gradient(ellipse at 70% 65%,#8f352e 0 12%,transparent 32%),repeating-linear-gradient(145deg,#e9b76b 0 2px,#c9754c 3px 5px,#8b4b59 6px 8px,#e0a65a 9px 11px);box-shadow:0 0 14px #ffb84d55; }
+  /* Planeta Terra com oceanos profundos, continentes maiores e sombreamento suave */
+  .space-body { position:absolute; border-radius:50%; pointer-events:none; z-index:0; object-fit:cover; mix-blend-mode:screen; }
+  .space-body.moon { width:clamp(30px,5vw,52px); aspect-ratio:1; top:12%; left:12%; box-shadow:0 0 12px #9eabc522; }
+  .space-body.distant { width:clamp(30px,4.5vw,48px); aspect-ratio:1; bottom:18%; right:13%; object-fit:cover; border-radius:50%; box-shadow:inset -4px -4px 7px #05091dcc,0 0 12px #c88c6540; }
+  .sun { position:absolute; width:clamp(48px,7vw,72px); height:clamp(48px,7vw,72px); top:7%; right:8%; border-radius:50%; z-index:0; object-fit:cover; mix-blend-mode:screen; filter:drop-shadow(0 0 7px #ff9a3540); }
+  .circle-button {
+    position:relative; z-index:2; width:clamp(230px,42vw,340px); aspect-ratio:1; border-radius:50%;
+    border:0; color:transparent; font-size:0; font-weight:1000; overflow:hidden; padding:0;
+    background:transparent; box-shadow:none;
+    transition:transform .07s, filter .1s; user-select:none; -webkit-tap-highlight-color:transparent;
+  }
+  .circle-button img.earth-photo { display:block; width:100%; height:100%; object-fit:contain; pointer-events:none; }
+  .circle-button::before, .circle-button::after { content:none; }
+  .circle-button:hover { filter:brightness(1.07); }
+  .circle-button:active { transform:scale(.94); }
+  .click-hint { position:relative; z-index:2; text-align:center; margin-top:19px; color:#d7e4ff; }
+  .click-hint strong { color:#ffe39a; }
+  .float-text { position:absolute; z-index:5; color:#fff4a6; font-weight:1000; font-size:1.25rem; text-shadow:0 2px 8px #000; pointer-events:none; animation:floatUp .8s ease-out forwards; }
+  @keyframes floatUp { from {opacity:1;transform:translateY(0) scale(.8)} to {opacity:0;transform:translateY(-75px) scale(1.25)} }
+  .progress-wrap { width:min(92%,440px); margin-top:20px; z-index:2; }
+  .progress-label { display:flex; justify-content:space-between; color:var(--muted); font-size:.76rem; margin-bottom:6px; }
+  .progress { height:9px; background:#060a25; border-radius:99px; overflow:hidden; border:1px solid #34437f; }
+  .progress > div { height:100%; width:0; background:linear-gradient(90deg,#65eaff,#b9ffb5,#ffdf7d); transition:width .2s; }
+  .shop { display:flex; flex-direction:column; height:100%; min-height:510px; }
+  .shop-head { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:14px 15px; border-bottom:1px solid var(--line); }
+  .shop-head h2 { margin:0; font-size:1.05rem; }
+  .shop-summary { color:var(--muted); font-size:.78rem; }
+  .shop-list { overflow-y:auto; overflow-x:hidden; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y; height:min(68vh,640px); max-height:640px; min-height:180px; padding:10px; scrollbar-width:thin; scrollbar-color:#7788dc #11183f; }
+  .shop-list[hidden] { display:none; }
+  .shop-toggle { flex:0 0 auto; color:var(--text); background:#202b65; border:1px solid #6579c8; padding:8px 11px; border-radius:10px; font-weight:800; font-size:.82rem; }
+  .shop-toggle:active { transform:scale(.98); }
+  .shop.is-collapsed { min-height:0; height:auto; }
+  .shop-list::-webkit-scrollbar { width:10px; }
+  .shop-list::-webkit-scrollbar-track { background:#11183f; border-radius:10px; }
+  .shop-list::-webkit-scrollbar-thumb { background:#7788dc; border:2px solid #11183f; border-radius:10px; }
+  .upgrade {
+    display:grid; grid-template-columns:46px minmax(0,1fr) auto; align-items:center; gap:10px;
+    border:1px solid rgba(124,155,239,.22); border-radius:14px; padding:11px; margin-bottom:9px;
+    background:linear-gradient(110deg,rgba(35,46,106,.65),rgba(16,23,64,.76));
+  }
+  .upgrade-icon { width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:1.5rem;background:linear-gradient(145deg,#35478e,#171e53);border:1px solid #687cc5; }
+  .upgrade-name { font-weight:850; font-size:.9rem; }
+  .upgrade-desc { font-size:.72rem; color:var(--muted); line-height:1.35; margin:3px 0; }
+  .upgrade-level { font-size:.72rem; color:#aeefff; }
+  .buy { min-width:82px; border:1px solid #8fe5ac; border-radius:10px; padding:8px 9px; color:#082b2b; font-size:.77rem; font-weight:950; background:linear-gradient(135deg,#a6ffc1,#54dba0); }
+  .buy:disabled { cursor:not-allowed; filter:grayscale(.7); opacity:.48; }
+  .buy small { display:block; font-size:.68rem; font-weight:800; }
+  .bottom-panel { margin-top:14px; padding:14px 16px; }
+  .stages { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; }
+  .stage { padding:10px 7px; border:1px solid var(--line); background:#121a49a8; border-radius:12px; text-align:center; color:var(--muted); font-size:.8rem; }
+  .stage span { display:block; font-size:1.25rem; margin-bottom:4px; }
+  .stage.active { border-color:#ffd66b; color:#fff1b3; background:#4b39725c; box-shadow:inset 0 0 18px #ffd66b12; }
+  .footer { text-align:center; color:#9daedb; font-size:.75rem; padding:15px 0 4px; }
+  .toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:#11183f; border:1px solid #6e8de5; color:#fff; padding:11px 16px; border-radius:13px; box-shadow:0 8px 30px #0008; z-index:20; display:none; max-width:90vw; text-align:center; }
+  @media(max-width:800px) {
+    .app { padding:10px; }
+    .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .layout { grid-template-columns:1fr; }
+    .play-area { min-height:430px; }
+    .shop { min-height:0; height:auto; }
+    .shop-list { height:65vh; max-height:560px; min-height:220px; }
+    .planet.one { width:50px;height:50px; }
+    .planet.two { width:34px;height:34px; }
+  }
+  @media(max-width:420px) {
+    header { padding:12px; }
+    .logo { width:40px;height:40px; }
+    .top-actions { width:100%; }
+    .top-actions button { flex:1; }
+    .stat { padding:10px; }
+    .play-area { min-height:390px; padding-inline:8px; }
+    .upgrade { grid-template-columns:38px minmax(0,1fr) auto; gap:7px; padding:8px; }
+    .upgrade-icon { width:36px;height:36px;font-size:1.2rem; }
+    .buy { min-width:72px; padding:7px 6px; }
+    .stages { grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b5ed7">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo">◉</div>
+      <div>
+        <h1>Clicker Circle</h1>
+        <div class="subtitle">Cosmos Tycoon • construa seu império circular</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="small-btn" id="saveBtn">💾 Salvar agora</button>
+      <button class="small-btn" id="backupBtn">📤 Backup</button>
+      <button class="small-btn" id="restoreBtn">📥 Restaurar</button>
+      <input id="restoreFile" type="file" accept="application/json,.json" hidden>
+      <button class="small-btn" id="soundBtn" aria-pressed="false">🔊 Som: desligado</button>
+      <button class="small-btn" id="resetBtn">↻ Reiniciar</button>
+    </div>
+  </header>
+
+  <section class="stats" aria-label="Estatísticas">
+    <div class="stat"><div class="stat-label">🪙 Moedas cósmicas</div><div class="stat-value" id="coins">0</div></div>
+    <div class="stat"><div class="stat-label">⭕ Círculos criados</div><div class="stat-value" id="circles">0</div></div>
+    <div class="stat"><div class="stat-label">⚡ Por clique</div><div class="stat-value" id="perClick">1</div></div>
+    <div class="stat"><div class="stat-label">🌠 Por segundo</div><div class="stat-value" id="perSecond">0</div></div>
+  </section>
+
+  <main class="layout">
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>🌍 Planeta Terra</h2>
+        <span class="hint">Clique para coletar</span>
+      </div>
+      <div class="play-area" id="playArea">
+        <img class="space-body moon" aria-hidden="true" alt="Lua real fotografada pela NASA" src="https://assets.science.nasa.gov/dynamicimage/assets/science/psd/earths-moon/outreach-materials/NASA-LRO-Moon-mosaic.png?crop=faces%2Cfocalpoint&fit=clip&h=1041&w=1041">
+        <img class="space-body distant" aria-hidden="true" alt="Júpiter fotografado do espaço" src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg">
+        <img class="sun" aria-hidden="true" alt="" src="https://space-facts.com/wp-content/uploads/sun.jpg" onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/f/fc/Sun_disk.jpg'">
+        <button class="circle-button" id="mainCircle" aria-label="Clique para ganhar moedas" title="Clique para ganhar moedas"><img class="earth-photo" alt="Planeta Terra fotografado do espaço" src="https://upload.wikimedia.org/wikipedia/commons/4/43/The_Earth_seen_from_Apollo_17_with_transparent_background.png"></button>
+        <div class="click-hint">Toque no círculo para ganhar <strong id="clickHint">1 moeda</strong></div>
+      </div>
+    </section>
+
+    <section class="panel shop">
+      <div class="shop-head">
+        <div><h2>🛒 Loja orbital</h2><div class="shop-summary">100 melhorias para desbloquear!</div></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+          <span class="hint" id="ownedCount">0 níveis</span>
+          <button class="shop-toggle" id="shopToggle" type="button" aria-expanded="true" aria-controls="shopList">Fechar loja ▲</button>
+        </div>
+      </div>
+      <div class="shop-list" id="shopList" aria-label="Melhorias da loja" tabindex="0"></div>
+    </section>
+  </main>
+
+  <div class="footer">Seu progresso tenta ser salvo automaticamente neste navegador a cada 5 segundos. Use 📤 Backup para guardar uma cópia e 📥 Restaurar para recuperá-la. ✨<br>Música: trilha original de videogame sintetizada no próprio jogo.</div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  "use strict";
+  const SAVE_KEY = "clickerCircleCosmosSaveV1";
+  const upgrades = [
+    {id:"finger", name:"Clique melhorado", icon:"👆", desc:"Seus cliques ficam mais fortes.", base:15, kind:"click", amount:1},
+    {id:"helper", name:"Mini fábrica", icon:"🏭", desc:"Produz moedas automaticamente.", base:35, kind:"second", amount:1},
+    {id:"magnet", name:"Ímã de moedas", icon:"🧲", desc:"Atrai moedas perdidas pelo espaço.", base:100, kind:"click", amount:5},
+    {id:"drone", name:"Drone coletor", icon:"🛸", desc:"Um drone trabalha por você.", base:150, kind:"second", amount:5},
+    {id:"orbital", name:"Coletor orbital", icon:"🪐", desc:"Recolhe energia em cada órbita.", base:500, kind:"second", amount:18},
+    {id:"bank", name:"Banco estelar", icon:"🏦", desc:"Transforma o espaço em lucro.", base:1200, kind:"second", amount:55},
+    {id:"laser", name:"Laser de círculos", icon:"🔆", desc:"Concentra energia no clique.", base:2500, kind:"click", amount:35},
+    {id:"factory", name:"Fábrica lunar", icon:"🌙", desc:"Produção industrial fora da Terra.", base:6000, kind:"second", amount:160},
+    {id:"comet", name:"Cometa minerador", icon:"☄️", desc:"Minerais raros viram moedas.", base:15000, kind:"second", amount:480},
+    {id:"portal", name:"Portal de moedas", icon:"🌀", desc:"Abre uma rota para riquezas distantes.", base:42000, kind:"second", amount:1400},
+    {id:"galaxy", name:"Banco galáctico", icon:"🌌", desc:"Financia sua expansão pelo cosmos.", base:120000, kind:"second", amount:4500},
+    {id:"dyson", name:"Esfera de energia", icon:"☀️", desc:"Aproveita energia de uma estrela.", base:350000, kind:"second", amount:15000},
+    {id:"empire", name:"Império circular", icon:"👑", desc:"Uma megaconstrução de produção.", base:1200000, kind:"second", amount:65000},
+    {id:"quantum", name:"Motor quântico", icon:"⚛️", desc:"Dobra a eficiência de todo o cosmos.", base:5000000, kind:"multiplier", amount:0.10},
+    {id:"extra01", name:'Robô clicador', icon:'🤖', desc:'Um robô toca no núcleo por você.', base:25000, kind:"click", amount:12},
+    {id:"extra02", name:'Esteira automática', icon:'🛞', desc:'Leva círculos recém-criados para a coleta.', base:35750, kind:"second", amount:8},
+    {id:"extra03", name:'Luvas gravitacionais', icon:'🧤', desc:'Aumentam a força de cada toque.', base:51122, kind:"click", amount:18},
+    {id:"extra04", name:'Mineração de asteroides', icon:'☄️', desc:'Extrai moedas de rochas espaciais.', base:73105, kind:"second", amount:25},
+    {id:"extra05", name:'Satélite coletor', icon:'🛰️', desc:'Recolhe moedas durante cada órbita.', base:104540, kind:"second", amount:40},
+    {id:"extra06", name:'Amplificador de pulso', icon:'📡', desc:'Fortalece o pulso de cada clique.', base:149492, kind:"click", amount:28},
+    {id:"extra07", name:'Refinaria cósmica', icon:'🏗️', desc:'Refina minerais em moedas brilhantes.', base:213774, kind:"second", amount:70},
+    {id:"extra08", name:'Bateria estelar', icon:'🔋', desc:'Armazena energia para a produção.', base:305697, kind:"multiplier", amount:0.03},
+    {id:"extra09", name:'Equipe de engenheiros', icon:'🧑\u200d🔧', desc:'Melhora a eficiência das máquinas.', base:437147, kind:"second", amount:110},
+    {id:"extra10", name:'Túnel de coleta', icon:'🚇', desc:'Transporta moedas de uma estação a outra.', base:625121, kind:"second", amount:160},
+    {id:"extra11", name:'Canhão de energia', icon:'💥', desc:'Dispara energia concentrada ao clicar.', base:893923, kind:"click", amount:55},
+    {id:"extra12", name:'Estufa lunar', icon:'🌱', desc:'Cultiva cristais energéticos na Lua.', base:1278310, kind:"second", amount:230},
+    {id:"extra13", name:'Fábrica de drones', icon:'🏭', desc:'Monta drones coletores em série.', base:1827984, kind:"second", amount:330},
+    {id:"extra14", name:'Núcleo de plasma', icon:'🔴', desc:'Aumenta a potência do seu toque.', base:2614017, kind:"click", amount:90},
+    {id:"extra15", name:'Farol de cometas', icon:'🔭', desc:'Atrai cometas cheios de minerais.', base:3738045, kind:"second", amount:480},
+    {id:"extra16", name:'Reator de fusão', icon:'⚗️', desc:'Gera energia para toda a estação.', base:5345404, kind:"multiplier", amount:0.04},
+    {id:"extra17", name:'Elevador orbital', icon:'🛗', desc:'Move cargas para centros de produção.', base:7643928, kind:"second", amount:700},
+    {id:"extra18", name:'Banco de cristais', icon:'💎', desc:'Guarda cristais e rende moedas.', base:10930817, kind:"second", amount:950},
+    {id:"extra19", name:'Luvas de titânio', icon:'🦾', desc:'Permitem cliques mais potentes.', base:15631069, kind:"click", amount:150},
+    {id:"extra20", name:'Nave mineradora', icon:'🚀', desc:'Mineradores exploram regiões distantes.', base:22352428, kind:"second", amount:1400},
+    {id:"extra21", name:'Portal de coleta', icon:'🌀', desc:'Traz recursos de uma zona próxima.', base:31963973, kind:"second", amount:2000},
+    {id:"extra22", name:'Torre de antenas', icon:'📶', desc:'Coordena máquinas em toda a base.', base:45708481, kind:"multiplier", amount:0.04},
+    {id:"extra23", name:'Laboratório orbital', icon:'🧪', desc:'Descobre métodos de produção melhores.', base:65363128, kind:"second", amount:2900},
+    {id:"extra24", name:'Impressora de círculos', icon:'🖨️', desc:'Fabrica círculos sem parar.', base:93469274, kind:"second", amount:4100},
+    {id:"extra25", name:'Punho magnético', icon:'🧲', desc:'Atrai energia diretamente ao clique.', base:133661062, kind:"click", amount:240},
+    {id:"extra26", name:'Mercado lunar', icon:'🏪', desc:'Troca recursos espaciais por moedas.', base:191135318, kind:"second", amount:5900},
+    {id:"extra27", name:'Frota de cargueiros', icon:'🚚', desc:'Entrega minerais a cada segundo.', base:273323505, kind:"second", amount:8200},
+    {id:"extra28", name:'Cristal de impulso', icon:'🔷', desc:'Amplifica todos os pulsos do núcleo.', base:390852613, kind:"multiplier", amount:0.05},
+    {id:"extra29", name:'Observatório solar', icon:'🔬', desc:'Prevê tempestades ricas em energia.', base:558919237, kind:"second", amount:12000},
+    {id:"extra30", name:'Fábrica de satélites', icon:'🛰️', desc:'Produz satélites para novas rotas.', base:799254509, kind:"second", amount:17000},
+    {id:"extra31", name:'Martelo gravitacional', icon:'🔨', desc:'Cada toque libera mais energia.', base:1142933948, kind:"click", amount:420},
+    {id:"extra32", name:'Estação de cometas', icon:'🌠', desc:'Processa material trazido por cometas.', base:1634395545, kind:"second", amount:24000},
+    {id:"extra33", name:'Rede de portais', icon:'🪄', desc:'Conecta pontos de coleta distantes.', base:2337185630, kind:"second", amount:34000},
+    {id:"extra34", name:'Computador quântico', icon:'💻', desc:'Calcula rotas de produção eficientes.', base:3342175451, kind:"multiplier", amount:0.05},
+    {id:"extra35", name:'Fábrica de robôs', icon:'🦿', desc:'Robôs extras mantêm a produção ativa.', base:4779310896, kind:"second", amount:48000},
+    {id:"extra36", name:'Mina de meteoritos', icon:'🌑', desc:'Extrai metais raros de meteoritos.', base:6834414581, kind:"second", amount:68000},
+    {id:"extra37", name:'Coroa de energia', icon:'👑', desc:'Concentra energia em cada clique.', base:9773212851, kind:"click", amount:750},
+    {id:"extra38", name:'Estação de pesquisa', icon:'🧬', desc:'Pesquisa melhorias para a indústria.', base:13975694377, kind:"second", amount:96000},
+    {id:"extra39", name:'Reator de antimatéria', icon:'⚛️', desc:'Libera energia de partículas raras.', base:19985242960, kind:"multiplier", amount:0.06},
+    {id:"extra40", name:'Fábrica de portais', icon:'🚪', desc:'Constrói rotas para novas fontes.', base:28578897433, kind:"second", amount:140000},
+    {id:"extra41", name:'Colheitadeira estelar', icon:'🌟', desc:'Colhe partículas ao redor das estrelas.', base:40867823329, kind:"second", amount:200000},
+    {id:"extra42", name:'Botas gravitacionais', icon:'🥾', desc:'Convertem movimento em força de clique.', base:58440987361, kind:"click", amount:1300},
+    {id:"extra43", name:'Cidade automatizada', icon:'🏙️', desc:'Prédios inteiros produzem moedas.', base:83570611927, kind:"second", amount:290000},
+    {id:"extra44", name:'Rede de energia', icon:'🔌', desc:'Distribui energia sem desperdício.', base:119505975056, kind:"multiplier", amount:0.06},
+    {id:"extra45", name:'Estaleiro espacial', icon:'⚓', desc:'Constrói naves de carga avançadas.', base:170893544330, kind:"second", amount:420000},
+    {id:"extra46", name:'Mina de nebulosa', icon:'🌫️', desc:'Recolhe poeira cósmica valiosa.', base:244377768392, kind:"second", amount:610000},
+    {id:"extra47", name:'Motor de dobra', icon:'🛸', desc:'Acelera a coleta entre sistemas.', base:349460208801, kind:"click", amount:2200},
+    {id:"extra48", name:'Banco interplanetário', icon:'🏦', desc:'Investe moedas em rotas comerciais.', base:499728098585, kind:"second", amount:900000},
+    {id:"extra49", name:'Cúpula de plasma', icon:'🫧', desc:'Protege e fortalece o núcleo.', base:714611180977, kind:"multiplier", amount:0.07},
+    {id:"extra50", name:'Fábrica de luas', icon:'🌙', desc:'Constrói pequenas luas industriais.', base:1021893988797, kind:"second", amount:1300000},
+    {id:"extra51", name:'Anel de mineração', icon:'💍', desc:'Extrai recursos de um anel planetário.', base:1461308403981, kind:"second", amount:1900000},
+    {id:"extra52", name:'Comando de drones', icon:'🎮', desc:'Coordena cliques robóticos avançados.', base:2089671017692, kind:"click", amount:3800},
+    {id:"extra53", name:'Elevador de estrelas', icon:'🪜', desc:'Transporta energia para a superfície.', base:2988229555300, kind:"second", amount:2800000},
+    {id:"extra54", name:'Usina de aurora', icon:'🌈', desc:'Transforma luz colorida em moedas.', base:4273168264080, kind:"second", amount:4000000},
+    {id:"extra55", name:'Escudo de energia', icon:'🛡️', desc:'Estabiliza a produção do império.', base:6110630617634, kind:"multiplier", amount:0.07},
+    {id:"extra56", name:'Fábrica planetária', icon:'🌍', desc:'Um planeta inteiro vira uma fábrica.', base:8738201783217, kind:"second", amount:5800000},
+    {id:"extra57", name:'Coletor de supernovas', icon:'💫', desc:'Aproveita energia de estrelas explosivas.', base:12495628550001, kind:"second", amount:8500000},
+    {id:"extra58", name:'Toque de titã', icon:'✊', desc:'Um clique libera uma onda colossal.', base:17868748826502, kind:"click", amount:7000},
+    {id:"extra59", name:'Rede de buracos de minhoca', icon:'🕳️', desc:'Encurta distâncias entre as minas.', base:25552310821898, kind:"second", amount:12500000},
+    {id:"extra60", name:'Forja de estrelas', icon:'🔥', desc:'Forja novas fontes de energia.', base:36539804475314, kind:"second", amount:18000000},
+    {id:"extra61", name:'Matriz de eficiência', icon:'🔶', desc:'Melhora o rendimento de cada máquina.', base:52251920399699, kind:"multiplier", amount:0.08},
+    {id:"extra62", name:'Anel de Dyson', icon:'⭕', desc:'Coleta energia ao redor de uma estrela.', base:74720246171570, kind:"second", amount:26000000},
+    {id:"extra63", name:'Frota de cruzadores', icon:'🚀', desc:'Naves enormes transportam recursos.', base:106849952025345, kind:"second", amount:38000000},
+    {id:"extra64", name:'Dedos de luz', icon:'✨', desc:'Cada toque concentra luz estelar.', base:152795431396244, kind:"click", amount:13000},
+    {id:"extra65", name:'Fábrica de dimensões', icon:'🪟', desc:'Produz recursos em uma dimensão vizinha.', base:218497466896629, kind:"second", amount:55000000},
+    {id:"extra66", name:'Coração da galáxia', icon:'💖', desc:'Usa o centro galáctico como fonte.', base:312451377662179, kind:"multiplier", amount:0.08},
+    {id:"extra67", name:'Império de satélites', icon:'🌐', desc:'Milhares de satélites recolhem energia.', base:446805470056917, kind:"second", amount:80000000},
+    {id:"extra68", name:'Forno de quasares', icon:'🌌', desc:'Transforma energia de quasares em moedas.', base:638931822181391, kind:"second", amount:115000000},
+    {id:"extra69", name:'Clique sísmico', icon:'🌋', desc:'O toque envia ondas pelo cosmos.', base:913672505719389, kind:"click", amount:24000},
+    {id:"extra70", name:'Rede de universos', icon:'🪐', desc:'Conecta fábricas de vários universos.', base:1306551683178726, kind:"second", amount:170000000},
+    {id:"extra71", name:'Condensador temporal', icon:'⌛', desc:'Aproveita melhor cada instante.', base:1868368906945579, kind:"multiplier", amount:0.09},
+    {id:"extra72", name:'Fábrica de constelações', icon:'⭐', desc:'Monta constelações que produzem energia.', base:2671767536932178, kind:"second", amount:250000000},
+    {id:"extra73", name:'Minerador de pulsares', icon:'📍', desc:'Extrai energia de estrelas pulsantes.', base:3820627577813015, kind:"second", amount:360000000},
+    {id:"extra74", name:'Mão cósmica', icon:'🖐️', desc:'Uma força espacial aumenta o clique.', base:5463497436272610, kind:"click", amount:45000},
+    {id:"extra75", name:'Portal multigaláctico', icon:'🌌', desc:'Abre rotas entre galáxias inteiras.', base:7812801333869833, kind:"second", amount:520000000},
+    {id:"extra76", name:'Núcleo de matéria escura', icon:'⚫', desc:'A matéria escura reforça a produção.', base:11172305907433860, kind:"multiplier", amount:0.09},
+    {id:"extra77", name:'Cidades estelares', icon:'🏘️', desc:'Colônias inteiras fabricam moedas.', base:15976397447630420, kind:"second", amount:750000000},
+    {id:"extra78", name:'Motor de singularidade', icon:'🌀', desc:'Usa uma singularidade como combustível.', base:22846248350111500, kind:"second", amount:1100000000},
+    {id:"extra79", name:'Clique de supernova', icon:'💥', desc:'Um toque libera energia de supernova.', base:32670135140659444, kind:"click", amount:90000},
+    {id:"extra80", name:'Rede de dimensões', icon:'🕸️', desc:'Une linhas de produção dimensionais.', base:46718293251143000, kind:"multiplier", amount:0.1},
+    {id:"extra81", name:'Colmeia de máquinas', icon:'🐝', desc:'Máquinas pequenas trabalham em conjunto.', base:66807159349134488, kind:"second", amount:1600000000},
+    {id:"extra82", name:'Trono galáctico', icon:'🪑', desc:'Seu comando acelera a economia galáctica.', base:95534237869262320, kind:"second", amount:2300000000},
+    {id:"extra83", name:'Dedo de singularidade', icon:'☝️', desc:'O clique concentra força de gravidade.', base:136613960153045120, kind:"click", amount:180000},
+    {id:"extra84", name:'Forja de universos', icon:'🌌', desc:'Cria universos com fábricas próprias.', base:195357963018854496, kind:"second", amount:3300000000},
+    {id:"extra85", name:'Relógio cósmico', icon:'🕰️', desc:'Sincroniza a produção de todos os mundos.', base:279361887116961920, kind:"multiplier", amount:0.1},
+    {id:"extra86", name:'Coroa de galáxias', icon:'👑', desc:'Galáxias inteiras trabalham para o império.', base:399487498577255488, kind:"second", amount:4800000000}
+  ];
+  const freshState = () => ({coins:0, circles:0, clickPower:1, totalClicks:0, levels:{}, lastSaved:Date.now(), sound:false});
+  let state = freshState();
+  const $ = id => document.getElementById(id);
+  const fmt = n => {
+    if (!Number.isFinite(n)) return "∞";
+    if (n < 1000) return Math.floor(n).toLocaleString("pt-BR");
+    const units = ["mil","mi","bi","tri","qua"];
+    let idx = -1, val = n;
+    while (val >= 1000 && idx < units.length-1) { val /= 1000; idx++; }
+    return val.toLocaleString("pt-BR",{maximumFractionDigits:val<10?2:1}) + " " + units[idx];
+  };
+  const level = id => state.levels[id] || 0;
+  const cost = u => Math.floor(u.base * Math.pow(1.16, level(u.id)));
+  const cps = () => {
+    let total = 0;
+    for (const u of upgrades) if (u.kind === "second") total += level(u.id) * u.amount;
+    return total * upgrades.filter(u => u.kind === "multiplier").reduce((factor, u) => factor * Math.pow(1 + u.amount, level(u.id)), 1);
+  };
+  const clickPower = () => {
+    let total = 1;
+    for (const u of upgrades) if (u.kind === "click") total += level(u.id) * u.amount;
+    return total * upgrades.filter(u => u.kind === "multiplier").reduce((factor, u) => factor * Math.pow(1 + u.amount, level(u.id)), 1);
+  };
+  function toast(message) {
+    const el = $("toast"); el.textContent = message; el.style.display = "block";
+    clearTimeout(toast.timer); toast.timer = setTimeout(() => el.style.display = "none", 2300);
+  }
+  let audioCtx = null;
+  let audioCompressor = null;
+  let audioMaster = null;
+  // Saída controlada: aumenta a percepção de volume sem deixar os acordes distorcerem.
+  function getAudioOutput(ctx) {
+    if (!audioCompressor || !audioMaster) {
+      audioCompressor = ctx.createDynamicsCompressor();
+      audioCompressor.threshold.setValueAtTime(-24, ctx.currentTime);
+      audioCompressor.knee.setValueAtTime(18, ctx.currentTime);
+      audioCompressor.ratio.setValueAtTime(12, ctx.currentTime);
+      audioCompressor.attack.setValueAtTime(0.008, ctx.currentTime);
+      audioCompressor.release.setValueAtTime(0.22, ctx.currentTime);
+      audioMaster = ctx.createGain();
+      audioMaster.gain.setValueAtTime(2.2, ctx.currentTime);
+      audioCompressor.connect(audioMaster);
+      audioMaster.connect(ctx.destination);
+    }
+    return audioCompressor;
+  }
+  // Jazz lounge original: acordes quentes, sem ruído áspero ou bipes agudos.
+  let musicTimer = null;
+  let musicBar = 0;
+  function getAudio() {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    if (!audioCtx) audioCtx = new Ctx();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+  function note(freq, start, duration, volume=.035, type="sine") {
+    // Volume ajustado para evitar distorção e o zumbido áspero, mantendo os mesmos acordes e ritmo.
+    const ctx = getAudio(); if (!ctx) return;
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq, start);
+    // Menos volume em cada oscilador evita o som de motor; o compressor mantém a música audível.
+    const peak = Math.min(volume * 4.2, 0.052);
+    gain.gain.setValueAtTime(.0001, start);
+    gain.gain.linearRampToValueAtTime(peak, start+.08);
+    gain.gain.setValueAtTime(peak*.82, Math.max(start+.09, start+duration-.16));
+    gain.gain.exponentialRampToValueAtTime(.0001, start+duration);
+    osc.connect(gain); gain.connect(getAudioOutput(ctx));
+    osc.start(start); osc.stop(start+duration+.03);
+  }
+  function playShopSound() {
+    if (!state.sound) return;
+    try { const ctx=getAudio(); if (!ctx) return; const t=ctx.currentTime;
+      note(523.25,t,.18,.025,"sine"); note(659.25,t+.07,.22,.02,"sine");
+    } catch(e) {}
+  }
+  function playJazzBar() {
+    const ctx=getAudio(); if (!ctx || !state.sound) return;
+    const t=ctx.currentTime+.08;
+    // Apenas a cama harmônica suave: sem baixo marcado e sem a melodia repetitiva aguda.
+    const chords=[
+      [261.63,329.63,392.00,493.88],
+      [220.00,261.63,329.63,392.00],
+      [261.63,349.23,392.00,440.00],
+      [246.94,293.66,349.23,392.00]
+    ];
+    const chord=chords[musicBar%chords.length];
+    chord.forEach((f,i)=>note(f,t+i*.035,3.75,.012,"sine"));
+    musicBar++;
+  }
+  function startElevatorMusic() {
+    if (!state.sound) return;
+    try {
+      getAudio();
+      if (musicTimer) clearInterval(musicTimer);
+      musicBar=0; playJazzBar();
+      musicTimer=setInterval(playJazzBar,4000);
+    } catch(e) { toast("Não consegui iniciar a música agora."); }
+  }
+  function stopElevatorMusic() {
+    if (musicTimer) { clearInterval(musicTimer); musicTimer=null; }
+  }
+  function save(silent=true) {
+    try {
+      state.lastSaved = Date.now();
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+      if (!silent) toast("Progresso salvo neste navegador! 💾");
+    } catch(e) {
+      if (!silent) toast("Não foi possível salvar. Verifique as configurações do navegador.");
+    }
+  }
+  function exportBackup() {
+    try {
+      const backup = { app: "Clicker Circle", version: 1, exportedAt: new Date().toISOString(), state };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "Clicker_Circle_Backup.json";
+      document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast("Backup baixado! Guarde o arquivo JSON em segurança. 📦");
+    } catch(e) {
+      toast("Não consegui criar o backup neste navegador.");
+    }
+  }
+  function restoreBackup(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result || ""));
+        const restored = data && data.state ? data.state : data;
+        if (!restored || typeof restored.coins !== "number" || typeof restored.circles !== "number" || typeof restored.levels !== "object") {
+          throw new Error("Backup inválido");
+        }
+        if (!confirm("Restaurar este backup? O progresso atual será substituído pelo progresso do arquivo.")) return;
+        state = {...freshState(), ...restored, levels: restored.levels || {}};
+        save(true); render();
+        toast("Progresso restaurado do backup! ✅");
+      } catch(e) {
+        toast("Esse arquivo não parece ser um backup válido do Clicker Circle.");
+      } finally {
+        $("restoreFile").value = "";
+      }
+    };
+    reader.onerror = () => toast("Não consegui ler esse arquivo de backup.");
+    reader.readAsText(file);
+  }
+  function load() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && typeof parsed.coins === "number") {
+          state = {...freshState(), ...parsed, levels: parsed.levels || {}};
+          const elapsed = Math.max(0, Math.min((Date.now() - (state.lastSaved || Date.now()))/1000, 60*60*8));
+          const offline = cps() * elapsed;
+          if (offline > 0) {
+            state.coins += offline;
+            state.circles += offline;
+            setTimeout(() => toast("Bem-vindo de volta! Você ganhou " + fmt(offline) + " moedas enquanto esteve fora. 🌠"), 500);
+          }
+        }
+      }
+    } catch(e) { state = freshState(); }
+  }
+  function renderShop() {
+    $("shopList").innerHTML = upgrades.map(u => {
+      const c = cost(u), lv = level(u.id);
+      const effect = u.kind === "click" ? `+${fmt(u.amount)} por clique` : u.kind === "second" ? `+${fmt(u.amount)} moedas/s` : `+${Math.round(u.amount*100)}% de produção`;
+      return `<article class="upgrade">
+        <div class="upgrade-icon">${u.icon}</div>
+        <div><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">${u.desc}</div><div class="upgrade-level">Nível ${lv} · ${effect}</div></div>
+        <button class="buy" data-buy="${u.id}" ${state.coins < c ? "disabled" : ""}>Comprar<small>🪙 ${fmt(c)}</small></button>
+      </article>`;
+    }).join("");
+  }
+  function render() {
+    $("coins").textContent = fmt(state.coins);
+    $("circles").textContent = fmt(state.circles);
+    $("perClick").textContent = fmt(clickPower());
+    $("perSecond").textContent = fmt(cps());
+    $("clickHint").textContent = fmt(clickPower()) + (clickPower() === 1 ? " moeda" : " moedas");
+    $("ownedCount").textContent = upgrades.reduce((n,u)=>n+level(u.id),0) + " níveis";
+    renderShop();
+  }
+  function floatGain(amount) {
+    const area = $("playArea"), circle = $("mainCircle"), a = area.getBoundingClientRect(), b = circle.getBoundingClientRect();
+    const el = document.createElement("span"); el.className="float-text"; el.textContent="+"+fmt(amount)+" 🪙";
+    el.style.left = (b.left-a.left+b.width/2-28+(Math.random()*36-18))+"px";
+    el.style.top = (b.top-a.top+20)+"px"; area.appendChild(el);
+    setTimeout(()=>el.remove(),850);
+  }
+  $("mainCircle").addEventListener("click", () => {
+    const gain = clickPower(); state.coins += gain; state.circles += gain; state.totalClicks += 1;
+    floatGain(gain); render();
+  });
+  const shopToggle = $("shopToggle");
+  shopToggle.addEventListener("click", () => {
+    const list = $("shopList");
+    const collapsed = !list.hidden;
+    list.hidden = collapsed;
+    document.querySelector(".shop").classList.toggle("is-collapsed", collapsed);
+    shopToggle.setAttribute("aria-expanded", String(!collapsed));
+    shopToggle.textContent = collapsed ? "Abrir loja ▼" : "Fechar loja ▲";
+  });
+  $("shopList").addEventListener("click", e => {
+    const btn = e.target.closest("[data-buy]"); if (!btn) return;
+    const u = upgrades.find(x=>x.id===btn.dataset.buy); if (!u) return;
+    const c = cost(u);
+    if (state.coins < c) { toast("Ainda faltam moedas para essa melhoria!"); return; }
+    state.coins -= c; state.levels[u.id] = level(u.id)+1;
+    toast("Melhoria comprada: " + u.name + "! ✨"); playShopSound(); render(); save(true);
+  });
+  $("saveBtn").addEventListener("click",()=>save(false));
+  $("backupBtn").addEventListener("click", exportBackup);
+  $("restoreBtn").addEventListener("click", () => $("restoreFile").click());
+  $("restoreFile").addEventListener("change", e => restoreBackup(e.target.files && e.target.files[0]));
+  $("soundBtn").addEventListener("click",()=>{
+    state.sound=!state.sound; $("soundBtn").textContent=state.sound?"🔊 Som: ligado":"🔊 Som: desligado";
+    $("soundBtn").setAttribute("aria-pressed",String(state.sound));
+    if (state.sound) startElevatorMusic(); else stopElevatorMusic();
+  });
+  $("resetBtn").addEventListener("click",()=>{
+    if (confirm("Quer reiniciar as melhorias? Você perderá apenas os upgrades; suas moedas e seus círculos serão mantidos.")) {
+      state.levels = {};
+      save(true); render(); toast("Upgrades reiniciados! Suas moedas e seus círculos foram mantidos. 🚀");
+    }
+  });
+  load(); render();
+  setInterval(() => { const automaticGain = cps()/10; state.coins += automaticGain; state.circles += automaticGain; render(); }, 100);
+  setInterval(() => save(true), 5000);
+  window.addEventListener("beforeunload",()=>save(true));
+})();
+</script>
+  <script src="pwa-install.js"></script>
+</body>
+</html>
