@@ -1,0 +1,14 @@
+{
+  "name": "Clicker da Terra",
+  "short_name": "Clicker Terra",
+  "description": "Clique na imagem do planeta Terra e acumule pontos.",
+  "start_url": "./Clicker_Circle_Com_Sol_Real_2_2_4.html",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#0b5ed7",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "icon-512.svg", "sizes": "512x512", "type": "image/svg+xml" }
+  ]
+}
