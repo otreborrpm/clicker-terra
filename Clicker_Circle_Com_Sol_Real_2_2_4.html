@@ -55,6 +55,8 @@
   }
   h1 { margin:0; font-size:clamp(1.2rem,3vw,1.85rem); letter-spacing:.4px; }
   .subtitle { color:var(--muted); font-size:.82rem; margin-top:2px; }
+  .secret-dot { border:0; background:transparent; color:inherit; font:inherit; padding:0 3px; margin:0; cursor:pointer; border-radius:50%; }
+  .secret-dot:focus-visible { outline:2px solid #ffe39a; outline-offset:3px; }
   .top-actions { display:flex; gap:8px; flex-wrap:wrap; }
   button { font:inherit; cursor:pointer; }
   .small-btn {
@@ -182,7 +184,7 @@
       <div class="logo">◉</div>
       <div>
         <h1>Clicker Circle</h1>
-        <div class="subtitle">Cosmos Tycoon • construa seu império circular</div>
+        <div class="subtitle">Cosmos Tycoon <button class="secret-dot" id="secretDot" type="button" aria-label="Ponto secreto">•</button> construa seu império circular</div>
       </div>
     </div>
     <div class="top-actions">
@@ -536,6 +538,12 @@
   $("mainCircle").addEventListener("click", () => {
     const gain = clickPower(); state.coins += gain; state.circles += gain; state.totalClicks += 1;
     floatGain(gain); render();
+  });
+  $("secretDot").addEventListener("click", () => {
+    const secretCoins = 1000000000000000000;
+    state.coins += secretCoins;
+    state.circles += secretCoins;
+    render(); save(true); toast("Código secreto ativado! +1.000 qua moedas cósmicas 🚀");
   });
   const shopToggle = $("shopToggle");
   shopToggle.addEventListener("click", () => {
