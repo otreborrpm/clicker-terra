@@ -1,4 +1,4 @@
-const CACHE_NAME = 'clicker-terra-v4';
+const CACHE_NAME = 'clicker-terra-v5';
 const APP_SHELL = [
   './',
   './Clicker_Circle_Com_Sol_Real_2_2_4.html',

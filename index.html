@@ -573,9 +573,12 @@
     if (state.sound) startElevatorMusic(); else stopElevatorMusic();
   });
   $("resetBtn").addEventListener("click",()=>{
-    if (confirm("Quer reiniciar as melhorias? Você perderá apenas os upgrades; suas moedas e seus círculos serão mantidos.")) {
-      state.levels = {};
-      save(true); render(); toast("Upgrades reiniciados! Suas moedas e seus círculos foram mantidos. 🚀");
+    if (confirm("Quer apagar completamente o progresso? Moedas, círculos, cliques e melhorias serão perdidos.")) {
+      state = freshState();
+      stopElevatorMusic();
+      $("soundBtn").textContent = "🔊 Som: desligado";
+      $("soundBtn").setAttribute("aria-pressed", "false");
+      save(true); render(); toast("Progresso apagado completamente. O jogo foi reiniciado. 🚀");
     }
   });
   load(); render();
