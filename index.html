@@ -55,7 +55,8 @@
   }
   h1 { margin:0; font-size:clamp(1.2rem,3vw,1.85rem); letter-spacing:.4px; }
   .subtitle { color:var(--muted); font-size:.82rem; margin-top:2px; }
-  .secret-dot { border:0; background:transparent; color:inherit; font:inherit; padding:0 3px; margin:0; cursor:pointer; border-radius:50%; }
+  .secret-dot { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border:0; background:transparent; color:inherit; font:inherit; padding:0; margin:-7px -2px; cursor:pointer; border-radius:50%; touch-action:manipulation; user-select:none; -webkit-tap-highlight-color:transparent; }
+  .secret-dot:hover, .secret-dot:active { background:#ffffff18; }
   .secret-dot:focus-visible { outline:2px solid #ffe39a; outline-offset:3px; }
   .top-actions { display:flex; gap:8px; flex-wrap:wrap; }
   button { font:inherit; cursor:pointer; }
