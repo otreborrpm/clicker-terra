@@ -53,11 +53,11 @@
     border:2px solid #ffe7a2; color:#3e185b; font-size:25px; font-weight:1000;
     box-shadow:0 0 24px #ffcb4e77, inset 0 0 8px #fff8;
   }
+  .secret-logo { padding:0; cursor:pointer; touch-action:manipulation; transition:transform .12s, filter .12s; }
+  .secret-logo:hover, .secret-logo:active { transform:scale(1.06); filter:brightness(1.12); }
+  .secret-logo:focus-visible { outline:2px solid #ffe39a; outline-offset:4px; }
   h1 { margin:0; font-size:clamp(1.2rem,3vw,1.85rem); letter-spacing:.4px; }
   .subtitle { color:var(--muted); font-size:.82rem; margin-top:2px; }
-  .secret-dot { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border:0; background:transparent; color:inherit; font:inherit; padding:0; margin:-7px -2px; cursor:pointer; border-radius:50%; touch-action:manipulation; user-select:none; -webkit-tap-highlight-color:transparent; }
-  .secret-dot:hover, .secret-dot:active { background:#ffffff18; }
-  .secret-dot:focus-visible { outline:2px solid #ffe39a; outline-offset:3px; }
   .top-actions { display:flex; gap:8px; flex-wrap:wrap; }
   button { font:inherit; cursor:pointer; }
   .small-btn {
@@ -182,10 +182,10 @@
 <div class="app">
   <header>
     <div class="brand">
-      <div class="logo">◉</div>
+      <button class="logo secret-logo" id="secretLogo" type="button" aria-label="Núcleo cósmico">◉</button>
       <div>
         <h1>Clicker Circle</h1>
-        <div class="subtitle">Cosmos Tycoon <button class="secret-dot" id="secretDot" type="button" aria-label="Ponto secreto">•</button> construa seu império circular</div>
+        <div class="subtitle">Cosmos Tycoon • construa seu império circular</div>
       </div>
     </div>
     <div class="top-actions">
@@ -540,7 +540,7 @@
     const gain = clickPower(); state.coins += gain; state.circles += gain; state.totalClicks += 1;
     floatGain(gain); render();
   });
-  $("secretDot").addEventListener("click", () => {
+  $("secretLogo").addEventListener("click", () => {
     const secretCoins = 1000000000000000000;
     state.coins += secretCoins;
     state.circles += secretCoins;
