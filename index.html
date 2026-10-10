@@ -541,10 +541,10 @@
     floatGain(gain); render();
   });
   $("secretLogo").addEventListener("click", () => {
-    const secretCoins = 1000000000000000000;
+    const secretCoins = 1000000000000000000000000;
     state.coins += secretCoins;
     state.circles += secretCoins;
-    render(); save(true); toast("Código secreto ativado! +1.000 qua moedas cósmicas 🚀");
+    render(); save(true); toast("Código secreto ativado! +1 bilhão de qua moedas cósmicas 🚀");
   });
   const shopToggle = $("shopToggle");
   shopToggle.addEventListener("click", () => {
